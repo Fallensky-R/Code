@@ -1,0 +1,304 @@
+###写在前面
+本来开开心心的看着ityped.js的源码，才看到几十行就发现怎么有两个方法没见过。然后翻看了一下MDN,发现自己的知识库要更新了。通过翻阅MDN和Stack Overflow，总结一些原生DOM操作的知识点，大致分为三个部分：Node解读、Element上的操作、DOM中的位置计算。
+
+###Node的分类
+Node中有很多类，但是有几个你必须记住：
+
+    | 类型           |  nodeType |
+    | -----------   |  --------  |  
+    | 元素 Element   |     1     |
+    | 属性 Attr      |     2     |
+    | 文本 Text      |     3     |
+    | 注释 Comment   |     8     |
+    | 文档 Document  |     9     |
+1
+2
+3
+4
+5
+6
+7
+###创建Node
+创建一个元素节点
+
+  /**
+   * @param 元素的名称
+   */
+  const el = document.createElement('div');
+1
+2
+3
+4
+创建一个属性节点
+
+  /**
+   * @param 属性的名称
+   */
+   const attr = document.createAttribute('title');
+   attr.value = "content";
+1
+2
+3
+4
+5
+创建一个文本节点
+
+  /**
+   * @param 文本内容
+   */
+  const txt = document.createTextNode('i am student');
+1
+2
+3
+4
+###nodeName属性
+对于元素节点，返回的是元素的tagName
+
+  el.nodeName // DIV
+1
+对于属性节点，返回为属性的名称
+
+  attr.nodeName // title
+1
+对于文本节点，始终返回#text
+
+  txt.nodeName // #text
+1
+对于document节点， 始终返回#document
+
+  document.nodeName // #document
+1
+###nodeValue属性
+对于元素节点和文档节点，返回的是null
+
+  el.nodeValue // null
+  document.nodeValue // null
+1
+2
+对于文本节点，返回的就是文本的值
+
+  txt.nodeValue // i am student
+1
+对于属性节点，返回的就是属性的值
+
+  attr.nodeValue // content
+1
+###接下来用到的HTML结构
+
+  部分css
+  .one {
+    background-color: rgb(222,222,12);
+    display: none;
+  }
+1
+2
+3
+4
+5
+  <div class="demo">
+    <div class="one item">one</div>
+    <div class="two item">two</div>
+    <div class="three item">three</div>
+  </div>
+1
+2
+3
+4
+5
+  const demo = document.querySelector('.demo'),
+        one = document.querySelector('.one'),
+        two = document.querySelector('.two'),
+        three = document.querySelector('.three');
+1
+2
+3
+4
+###子节点
+
+hasChildNodes() 是否有子节点
+childNodes 属性 返回子节点的集合
+firstChild 属性 首节点
+lastChild 属性 尾节点
+  if (demo.hasChildNodes()) {
+    demo.childNodes.forEach(function (item) {
+      console.log(item.nodeName);
+    })
+  }
+
+  输出：
+  #text
+  DIV
+  #text
+  DIV
+  #text
+  DIV
+  #text
+
+  这里特别要注意的是，为什么会出现四个#text，主要是我们的在写HTML标签时，换行符被解释成了文本节点。
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+  /**
+   * 由上面的讲解，我们自然会知道下面输出什么
+   */
+  console.log(demo.firstChild); // #text
+  console.log(demo.lastChild);  // #text
+
+  但是我们在实际应用中，一般多是需要元素，所以有这两个方法:
+  console.log(demo.firstElementChild); //<div class="one"></div>
+  console.log(demo.lastElementChild);  //<div class="three"></div>
+1
+2
+3
+4
+5
+6
+7
+8
+9
+###兄弟节点
+
+前一个兄弟节点 previousSibling 属性
+后一个兄弟节点 nextSibling 属性
+  console.log(demo.previousSibling); // #text
+  console.log(demo.nextSibling);  // #text
+
+  同样你也可以用 previousElementSibling 和 nextElementSibling
+1
+2
+3
+4
+###parentNode 与 parentElement
+
+parentNode 属性 获取父级节点
+parentElement 属性 获取父级元素
+大部分的情况下，两者多是相同的。（特例在下面）
+  console.log(document.body.parentNode.nodeName); //HTML
+  console.log(document.body.parentElement.nodeName); //HTML
+
+  console.log(document.documentElement.parentNode); //#document
+  console.log(document.documentElement.parentElement); // null
+1
+2
+3
+4
+5
+###textContent 与 innerText
+
+textContent 属性 获取该节点下的所有文本
+innerText 属性 获取该节点下的文本，但是被css,js隐藏的文本不显示。
+他们得到的文本多包含一些特殊字符，需要处理。
+###添加节点
+
+parentNode.appendChild(node)
+targetNode.parentNode.insertBefore(newNode, targetNode);
+  const newElement = document.createElement('div');
+  demo.appendChild(newElement);
+
+  /**
+   * 在目标节点之前插入一个节点
+   */
+   const newElement1 = document.createElement('div');
+   one.parentNode.insertBefore(newElement1, one);
+
+   /**
+    * 原生的并未听过在一个节点的后面插入一个节点
+    * 可以DIY
+    */
+
+    function insertAfter(newElement, target) {
+      if (target.nextElementSibling === null) {
+        target.parentNode.appendChild(newElement);
+        return;
+      }
+      target = target.nextElementSibling;
+      target.parentNode.insertBefore(newElement, target);
+    }
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+###复制节点
+
+targetNode.cloneNode(deep);
+deep为true: 子节点也复制; deep为false: 不复制子节点。
+  const copyElementDeep = demo.cloneNode(true); //带有子节点
+  const copyElement = demo.cloneNode(false); //不含子节点
+1
+2
+###删除节点
+
+targetNode.remove()
+parentNode.removeChild(node)
+第一个方法没什么讲的，重要的是第二个方法.
+  /**
+   * 在调用parentNode.removeChild(node)之前
+   * 必须确保node是parentNode的子节点，否则会报错。
+   */
+  if (demo.contains(newElement)) {
+    demo.removeChild(newElement);
+  }
+1
+2
+3
+4
+5
+6
+7
+###替换节点
+
+targetNode.parentNode.replaceChild(newElement, targetNode);
+###判断两个节点是否相等
+
+node.isEqualNode(otherNode) 类型和特性相等， 则为true
+node.isSameNode(otherNode) 只与自己比较时， 才为true
+  const demo1 = document.createElement('div');
+  demo1.className = "some";
+  const demo2 = document.createElement('div');
+  demo2.className = 'some';
+  const demo3 = document.createElement('div');
+  demo3.className = "ok";
+  console.log(demo1.isEqualNode(demo1)); // true
+  console.log(demo1.isEqualNode(demo2)); // true
+  console.log(demo1.isEqualNode(demo3)); // false
+
+  console.log(demo1.isSameNode(demo1));  // true
+  console.log(demo1.isSameNode(demo2));  // false
+  console.log(demo1.isSameNode(demo3));  // false
+
+  const demo4 = demo1.cloneNode(true);
+  console.log(demo1.isSameNode(demo4)); // false
+————————————————
+版权声明：本文为CSDN博主「descire」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/dai_qingyun/java/article/details/54603619
