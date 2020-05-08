@@ -1,0 +1,70 @@
+JS获取DOM元素的方法（8种）
+
+通过ID获取（getElementById）
+通过name属性（getElementsByName）
+通过标签名（getElementsByTagName）
+通过类名（getElementsByClassName）
+通过选择器获取一个元素（querySelector）
+通过选择器获取一组元素（querySelectorAll）
+获取html的方法（document.documentElement）
+document.documentElement是专门获取html这个标签的
+获取body的方法（document.body）
+document.body是专门获取body这个标签的。
+1.通过ID获取（getElementById）
+
+document.getElementById('id')
+上下文必须是document。
+必须传参数，参数是string类型，是获取元素的id。
+返回值只获取到一个元素，没有找到返回null。
+2.通过name属性（getElementsByName）
+
+document.getElementsByName('name')
+上下文必须是document。内容
+必须传参数，参数是是获取元素的name属性。
+返回值是一个类数组，没有找到返回空数组。
+3.通过标签名（getElementsByTagName）
+
+复制代码
+var obj = document.getElementsByTagName('div');
+for(let i = 0; i<obj.length; i++){
+        obj[i].onclick = function(e){
+            console.log(i)
+        }
+    }
+复制代码
+上下文可以是document，也可以是一个元素，注意这个元素一定要存在。
+参数是是获取元素的标签名属性，不区分大小写。
+返回值是一个类数组，没有找到返回空数组
+4.通过类名（getElementsByClassName
+
+复制代码
+var obj1 = document.getElementsByClassName('animated')
+// console.log
+0:div.app.animated
+1:div#login.login.animated.rubberBand
+2:div#reg.reg.animated.shake
+3:div#kefu.kefu.animated.swing
+4:div#LoginState.state.animated.bounce
+5:div.loginState.animated
+6:div.regState.animated
+7:div.pop.animated
+复制代码
+上下文可以是document，也可以是一个元素。
+参数是元素的类名。
+返回值是一个类数组，没有找到返回空数组。
+5.通过选择器获取一个元素（querySelector）
+
+document.querySelector('.animated')
+上下文可以是document，也可以是一个元素。
+参数是选择器，如：”div .className”。
+返回值只获取到第一个元素。
+6.通过选择器获取一组元素（querySelectorAll）
+
+ 
+
+document.querySelector('.animated')
+ 
+
+上下文可以是document，也可以是一个元素。
+参数是选择器，如：”div .className”。
+返回值是一个类数组。
