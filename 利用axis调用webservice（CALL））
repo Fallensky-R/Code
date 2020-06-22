@@ -1,0 +1,110 @@
+一、准备需要的jar包
+
+    在maven项目中，pom的依赖如下
+
+<!-- axis -->
+		<dependency>
+			<groupId>org.apache.axis</groupId>
+			<artifactId>axis</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-discovery</groupId>
+			<artifactId>commons-discovery</artifactId>
+			<version>0.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.axis</groupId>
+			<artifactId>axis-jaxrpc</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.axis</groupId>
+			<artifactId>axis-saaj</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>wsdl4j</groupId>
+			<artifactId>wsdl4j</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<!-- mail -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.7</version>
+		</dependency>
+二、新建测试方法
+
+直接上代码
+
+public static void main(String[] args) {  
+		try {  
+			//字符集
+			String encodingStyle = "utf-8";
+			//WSDL的地址
+            String endpoint = "http://www.webxml.com.cn/WebServices/RandomFontsWebService.asmx?wsdl";  
+            //命名空间，在WSDL中对应的标签是：参见说明第3条                                    
+            String targetNamespace = "http://WebXml.com.cn/";
+            //具体方法的调用URI，在WSDL中对应的标签是：参见说明第4条
+            String soapActionURI = "http://WebXml.com.cn/getCharFonts";
+            //具体调用的方法名，在WSDL中对应的标签是：参见说明第5条
+            String method = "getCharFonts";
+            //调用接口的参数的名字
+            String[] paramNames = {"byFontsLength"};
+            //调用接口的参数的值
+            Integer[] paramValues = {1};
+           
+            Service service = new Service();  
+            Call call = (Call) service.createCall(); 
+//            call.setTimeout(new Integer(20000));  //设置超时时间
+            call.setSOAPActionURI(soapActionURI);
+            call.setTargetEndpointAddress(new java.net.URL(endpoint));  //设置目标接口的地址
+            call.setEncodingStyle(encodingStyle);//设置传入服务端的字符集格式如utf-8等
+            call.setOperationName(new QName(targetNamespace,method));// 具体调用的方法名，可以由接口提供方告诉你，也可以自己从WSDL中找  
+            call.setUseSOAPAction(true); 
+            call.addParameter(new QName(targetNamespace,paramNames[0]),  
+                    org.apache.axis.encoding.XMLType.XSD_INTEGER,  
+                    javax.xml.rpc.ParameterMode.IN);// 接口的参数  
+//            call.setReturnType(org.apache.axis.encoding.XMLType.XSD_STRING);// 设置返回类型  ，如String
+            call.setReturnClass(java.lang.String[].class); //返回字符串数组类型
+            // 给方法传递参数，并且调用方法 ，如果无参，则new Obe 
+            String[] result = (String[]) call.invoke(new Object[] {paramValues[0]}); 
+            // 打印返回值
+            System.out.println("result is " + result.toString());  
+            if (result != null && result.length > 0) {
+            	for (int i = 0; i < result.length; i++) {
+            		System.out.println(result[i]);
+            	}
+			}
+        } catch (Exception e) {  
+            System.err.println(e.toString());  
+        }  
+    }  
+三、说明
+
+1.上面的代码理论上直接运行即可调通，本地亲测过
+
+2.关键的参数都先提出来解释了，这些参数都可以在WSDL文档中找到，搜变量名即可
+
+3.在WSDL中对应的标签是
+
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" ... targetNamespace="http://WebXml.com.cn/">
+4.在WSDL中对应的标签是
+<soap:operation soapAction="http://WebXml.com.cn/getCharFonts" style="document"/>
+5.在WSDL中对应的标签是
+<wsdl:operation name="getCharFonts">
+6.如果调用方法没有参数，那么call.addParameter那一行就不用了
+
+7.有些接口提供方提供的WDSL中没有soapActionURI，那么就不用设置
+
+8.具体参数的名字和类型，一般接口提供者会告诉你，如果是调用第三方的接口，可以自己从文档中找，比如在本例中，可以在WSDL文档中找到这个标签：<soap:address location="http://www.webxml.com.cn/WebServices/RandomFontsWebService.asmx"/>，具体参数的地址就为：http://www.webxml.com.cn/WebServices/RandomFontsWebService.asmx
+————————————————
+版权声明：本文为CSDN博主「张小烦一点都不烦」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/qq_33236248/java/article/details/80436688
